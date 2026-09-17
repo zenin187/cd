@@ -1,0 +1,44 @@
+%{
+#include <stdio.h>
+#include "y.tab.h"
+%}
+%%
+[a-zA-Z][a-zA-Z0-9]* { return VAR; }
+. { return INVALID; }
+%%
+
+yacc calc.y
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+int yyerror(char *s);
+int yylex(void);
+%}
+
+%token VAR INVALID
+
+%%
+S: VAR { printf("valid variable name !\n"); }
+ | INVALID { printf("Invalid variable name !\n"); }
+ ;
+%%
+
+int main() {
+    printf("Enter a variable name : \n");
+    yyparse();
+    return 0;
+}
+
+int yyerror(char *s) {
+    return 0;
+}
+
+Enter a variable Name :
+Abc123
+Valid Variable Name !
+
+Enter a variable Name :
+123Abc
+Invalid variable name !
+
