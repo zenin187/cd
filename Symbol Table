@@ -1,0 +1,96 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+struct symbol {
+    int Sno;
+    char token[20], category[20], address[10], Scope[10];
+};
+
+int main() {
+    char code[200];
+    struct symbol table[50];
+    int n = 0, i = 0, j = 0, addr = 100, insideFunc = 0;
+    char word[20];
+
+    printf("Enter code (end with $):\n");
+    scanf("%[^$]", code);
+
+    while (code[i] != '\0') {
+        if (isspace(code[i])) {
+            i++;
+            continue;
+        }
+        if (strchr(";,(){}", code[i])) {
+            table[n] = (struct symbol){n + 1, {code[i], 0}, "Special Symbol", "-", "-"};
+            if (code[i] == '{') insideFunc = 1;
+            if (code[i] == '}') insideFunc = 0;
+            n++;
+            i++;
+            continue;
+        }
+        if (strchr("+-*/<>", code[i])) {
+            table[n] = (struct symbol){n + 1, {code[i], 0}, "operator", "-", "-"};
+            n++;
+            i++;
+            continue;
+        }
+
+        j = 0;
+        while (isalnum(code[i]) || code[i] == '_') {
+            word[j++] = code[i++];
+        }
+        word[j] = '\0';
+
+        if (j > 0) {
+            strcpy(table[n].token, word);
+            table[n].Sno = n + 1;
+            if (!strcmp(word, "int") || !strcmp(word, "float") || !strcmp(word, "char")) {
+                strcpy(table[n].category, "keyword");
+                strcpy(table[n].address, "-");
+                strcpy(table[n].Scope, "-");
+            } else if (!strcmp(word, "main")) {
+                strcpy(table[n].category, "Function");
+                strcpy(table[n].address, "-");
+                strcpy(table[n].Scope, "Global");
+            } else if (isdigit(word[0])) {
+                strcpy(table[n].category, "constant");
+                strcpy(table[n].address, "-");
+                strcpy(table[n].Scope, "-");
+            } else {
+                strcpy(table[n].category, "variable");
+                sprintf(table[n].address, "%d", addr);
+                addr += 4;
+                strcpy(table[n].Scope, insideFunc ? "Local" : "Global");
+            }
+            n++;
+        } else {
+            i++;
+        }
+    }
+
+    printf("\n--- Symbol Table ---\n");
+    printf("Sno  Token    Category    Address  Scope\n");
+    for (i = 0; i < n; i++) {
+        printf("%-4d %-9s %-11s %-7s %s\n", table[i].Sno, table[i].token, table[i].category, table[i].address, table[i].Scope);
+    }
+    return 0;
+}
+
+
+--- Symbol Table ---
+SNo  Token    Category       Address  Scope
+1    Int      keyword        -        -
+2    main     Function       -        Global
+3    (        Special symbol -        -
+4    )        Special symbol -        -
+5    {        special symbol -        -
+6    Int      keyword        -        -
+7    a        Variable       100      local
+8    ;        special symbol -        -
+9    a        Variable       104      local
+10   =        operator       -        -
+11   5        constant       -        -
+12   ;        special symbol -        -
+13   }        special symbol -        -
+
