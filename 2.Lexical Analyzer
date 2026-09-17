@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
+int main() {
+    char code[200], word[30];
+    int i = 0, j, sr = 1;
+    printf("Enter code (end with $):\n");
+    scanf("%[^$]", code);
+    printf("\nSno\tLexeme\t\tType\n");
+    while (code[i]) {
+        if (isspace(code[i])) { 
+            i++; 
+            continue; 
+        }
+        if (code[i] == '/' && code[i+1] == '/') {
+            printf("%d\t//", sr++);
+            i += 2;
+            while (code[i] && code[i] != '\n')
+                putchar(code[i++]);
+            printf("\tcomment\n");
+            continue;
+        }
+        if (isalpha(code[i])) {
+            j = 0;
+            while (isalnum(code[i])) 
+                word[j++] = code[i++];
+            word[j] = '\0';
+            if (!strcmp(word, "int") || !strcmp(word, "float") || !strcmp(word, "char"))
+                printf("%d\t%s\t\tkeyword\n", sr++, word);
+            else if (!strcmp(word, "main"))
+                printf("%d\t%s\t\tFunction\n", sr++, word);
+            else
+                printf("%d\t%s\t\tIdentifier\n", sr++, word);
+            continue;
+        }
+        if (isdigit(code[i])) {
+            j = 0;
+            while (isdigit(code[i])) 
+                word[j++] = code[i++];
+            word[j] = '\0';
+            printf("%d\t%s\t\tconstant\n", sr++, word);
+            continue;
+        }
+        if (strchr("=+-*/", code[i])) {
+            printf("%d\t%c\t\toperator\n", sr++, code[i]);
+            i++;
+            continue;
+        }
+        if (strchr(";,(){}", code[i])) {
+            printf("%d\t%c\t\tspecial sym\n", sr++, code[i]);
+            i++;
+            continue;
+        }
+        i++;
+    }
+    return 0;
+}
